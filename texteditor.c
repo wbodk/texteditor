@@ -10,6 +10,7 @@
 
 /*** defines ***/
 #define CTRL_KEY(k) ((k) & 0x1f)
+#define EDITOR_VERSION "0.0.1"
 
 /*** data ***/
 struct editorConfig{
@@ -87,7 +88,19 @@ void editorClearScreen(struct abuff* ab){
 
 void editorDrawRows(struct abuff* ab){
 	for (int i=0; i < E.screenrows; i++){
-		abAppend(ab, "~", 1);
+		if(i==E.screenrows/3){
+			char welcome[80];
+			int welcomelen = snprintf(welcome, sizeof(welcome), "Welcome to TextEditor v%s", EDITOR_VERSION);
+			if (welcomelen>E.screencols) welcomelen=E.screencols;
+			int padding=(E.screencols-welcomelen)/2;
+			if (padding) abAppend(ab, "~", 1);
+			for (int y=0; y<padding; y++){
+				abAppend(ab, " ", 1);
+			}
+			abAppend(ab, welcome, welcomelen);
+		} else{
+			abAppend(ab, "~", 1);
+		}
 		abAppend(ab, "\x1b[K", 3);
 		if (i < E.screenrows-1) abAppend(ab, "\r\n", 2);
 	}
