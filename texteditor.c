@@ -11,7 +11,14 @@
 /*** defines ***/
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define EDITOR_VERSION "0.0.1"
-
+enum editorKey{
+	ARROW_LEFT=1000,
+	ARROW_RIGHT,
+	ARROW_UP,
+	ARROW_DOWN,
+	PAGE_UP,
+	PAGE_DOWN
+};
 /*** data ***/
 struct editorConfig{
 	int cx, cy;
@@ -124,9 +131,8 @@ void editorRefreshScreen(){
 	write(STDOUT_FILENO, ab.b, ab.len);
 	abFree(&ab);
 }
-
 /*** input ***/
-char editorReadKey(){
+int editorReadKey(){
 	int nread;
 	char c;
 	while ((nread = read(STDIN_FILENO, &c, 1)) != 1){
@@ -139,12 +145,23 @@ char editorReadKey(){
 		if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
 
 		if (seq[0] == '['){
-			switch (seq[1]){
-				case 'A': return 'w';
-				case 'B': return 's';
-				case 'C': return 'd';
-				case 'D': return 'a';
+			if (seq[1]>=0 && seq[1]<=9){
+				if (read(STDIN_FILENO, &seq[2], 1) != 1) return '\x1b';
+				if (seq[2]=='~'){
+					switch (seq[1]){
+						case '5': return PAGE_UP;
+						case '6': return PAGE_DOWN;
+					}
+				} 
+			} else{
+				switch (seq[1]){
+					case 'A': return ARROW_UP; 
+					case 'B': return ARROW_DOWN; 
+					case 'C': return ARROW_RIGHT;
+					case 'D': return ARROW_LEFT;
+				}
 			}
+
 		}
 		return '\x1b';
 	} else{
@@ -152,10 +169,11 @@ char editorReadKey(){
 	}
 }
 
-void editorMoveCursor(char key);
+
+void editorMoveCursor(int key);
 void editorProcessKeyPress(){
 	struct abuff ab = ABUF_INIT;
-	char c = editorReadKey();
+	int c = editorReadKey();
 	switch (c){
 		case CTRL_KEY('q'):
 			abAppend(&ab, "\x1b[2J", 4);
@@ -164,28 +182,36 @@ void editorProcessKeyPress(){
 			abFree(&ab);
 			exit(0);
 			break;
-		case 'w':
-		case 'a':
-		case 's':
-		case 'd':
+		case ARROW_UP:
+		case ARROW_DOWN:
+		case ARROW_LEFT:
+		case ARROW_RIGHT:
 			editorMoveCursor(c);
 			break;
 	}
 }
-
-void editorMoveCursor(char key){
-	switch(key){
-		case 'a':
-			E.cx--;
+void editorMoveCursor(int key){
+	switch(key)
+	{
+		case ARROW_LEFT:
+			if (E.cx != 0){
+				E.cx--;
+			}
 			break;
-		case 'd':
-			E.cx++;
+		case ARROW_RIGHT:
+			if (E.cx != E.screencols-1){
+				E.cx++;
+			}
 			break;
-		case 'w':
-			E.cy--;
+		case ARROW_UP:
+			if (E.cy != 0){
+				E.cy--;
+			}
 			break;
-		case 's':
-			E.cy++;
+		case ARROW_DOWN:
+			if (E.cy != E.screenrows-1){
+				E.cy++;
+			}
 			break;
 	}
 }
