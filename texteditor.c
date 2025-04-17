@@ -145,7 +145,7 @@ int editorReadKey(){
 		if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
 
 		if (seq[0] == '['){
-			if (seq[1]>=0 && seq[1]<=9){
+			if (seq[1]>='0' && seq[1]<='9'){
 				if (read(STDIN_FILENO, &seq[2], 1) != 1) return '\x1b';
 				if (seq[2]=='~'){
 					switch (seq[1]){
@@ -186,11 +186,14 @@ void editorProcessKeyPress(){
 		case ARROW_DOWN:
 		case ARROW_LEFT:
 		case ARROW_RIGHT:
+		case PAGE_UP:
+		case PAGE_DOWN:
 			editorMoveCursor(c);
 			break;
 	}
 }
-void editorMoveCursor(int key){
+
+void editorMoveCursor(int key){ //FIX THE PGUP PGDN THING
 	switch(key)
 	{
 		case ARROW_LEFT:
@@ -211,6 +214,16 @@ void editorMoveCursor(int key){
 		case ARROW_DOWN:
 			if (E.cy != E.screenrows-1){
 				E.cy++;
+			}
+			break;
+		case PAGE_UP:
+			if (E.cy!=0){
+				E.cy = 0;
+			}
+			break;
+		case PAGE_DOWN:
+			if (E.cy!=E.screenrows-1){
+				E.cy += E.cy - (E.screenrows-1);
 			}
 			break;
 	}
