@@ -16,6 +16,8 @@ enum editorKey{
 	ARROW_RIGHT,
 	ARROW_UP,
 	ARROW_DOWN,
+	HOME,
+	END,
 	PAGE_UP,
 	PAGE_DOWN
 };
@@ -149,19 +151,34 @@ int editorReadKey(){
 				if (read(STDIN_FILENO, &seq[2], 1) != 1) return '\x1b';
 				if (seq[2]=='~'){
 					switch (seq[1]){
+						case '1': return HOME;
+						case '4': return END;
 						case '5': return PAGE_UP;
 						case '6': return PAGE_DOWN;
+						case '7': return HOME;
+						case '8': return END;
 					}
 				} 
-			} else{
+			}
+
+
+			else{
 				switch (seq[1]){
 					case 'A': return ARROW_UP; 
 					case 'B': return ARROW_DOWN; 
 					case 'C': return ARROW_RIGHT;
 					case 'D': return ARROW_LEFT;
+					case 'H': return HOME;
+					case 'F': return END;
 				}
 			}
 
+		}
+		else if (seq[1]=='O'){
+			switch (seq[2]){
+				case 'H': return HOME;
+				case 'F': return END;
+			}
 		}
 		return '\x1b';
 	} else{
@@ -186,14 +203,24 @@ void editorProcessKeyPress(){
 		case ARROW_DOWN:
 		case ARROW_LEFT:
 		case ARROW_RIGHT:
-		case PAGE_UP:
-		case PAGE_DOWN:
 			editorMoveCursor(c);
 			break;
-	}
+		case PAGE_UP:
+		case PAGE_DOWN:
+			{
+			int times = E.screenrows;
+			while(times--){
+				editorMoveCursor(c==PAGE_UP?ARROW_UP:ARROW_DOWN);
+			}
+			}
+			break;
+		case HOME:
+		case END:
+			break;
+		}
 }
 
-void editorMoveCursor(int key){ //FIX THE PGUP PGDN THING
+void editorMoveCursor(int key){ 
 	switch(key)
 	{
 		case ARROW_LEFT:
@@ -214,16 +241,6 @@ void editorMoveCursor(int key){ //FIX THE PGUP PGDN THING
 		case ARROW_DOWN:
 			if (E.cy != E.screenrows-1){
 				E.cy++;
-			}
-			break;
-		case PAGE_UP:
-			if (E.cy!=0){
-				E.cy = 0;
-			}
-			break;
-		case PAGE_DOWN:
-			if (E.cy!=E.screenrows-1){
-				E.cy += E.cy - (E.screenrows-1);
 			}
 			break;
 	}
