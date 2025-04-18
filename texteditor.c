@@ -16,6 +16,7 @@ enum editorKey{
 	ARROW_RIGHT,
 	ARROW_UP,
 	ARROW_DOWN,
+	DEL,
 	HOME,
 	END,
 	PAGE_UP,
@@ -152,6 +153,7 @@ int editorReadKey(){
 				if (seq[2]=='~'){
 					switch (seq[1]){
 						case '1': return HOME;
+						case '3': return DEL;
 						case '4': return END;
 						case '5': return PAGE_UP;
 						case '6': return PAGE_DOWN;
@@ -174,8 +176,8 @@ int editorReadKey(){
 			}
 
 		}
-		else if (seq[1]=='O'){
-			switch (seq[2]){
+		else if (seq[0]=='O'){
+			switch (seq[1]){
 				case 'H': return HOME;
 				case 'F': return END;
 			}
@@ -215,7 +217,10 @@ void editorProcessKeyPress(){
 			}
 			break;
 		case HOME:
+			E.cx=0;
+			break;
 		case END:
+			E.cx=E.screencols-1;
 			break;
 		}
 }
